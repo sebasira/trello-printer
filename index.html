@@ -85,6 +85,9 @@
 " type="text/javascript"></script>
   
   <script type="text/javascript">
+    
+    // EAT DATA
+    // --------
     function eatData(trelloJson){
       var data = {
         board: trelloJson.name,
@@ -92,6 +95,7 @@
         ref: {}
       }
       
+      // Swipe LIST inside JSON
       for(i in trelloJson.lists){
         var list = trelloJson.lists[i]
         if(list.closed){
@@ -105,6 +109,7 @@
         data.lists.push(data.ref[list.id])
       }
       
+      // Swipe CARDS inside JSON
       for(i in trelloJson.cards){
         var card = trelloJson.cards[i]
         if(card.closed){
@@ -118,10 +123,11 @@
         data.ref[card.idList].cards.push(data.ref[card.id])    
       }
       
+      // Swipe ACTIONS inside JSON
       for(i in trelloJson.actions){
         var action = trelloJson.actions[i]
         if(action.   type != "commentCard"){
-          //continue
+            continue
         }
         data.ref[action.id] = {
           text: marked(action.data.text),
@@ -132,15 +138,21 @@
         }catch(e){
         }
       }
+      
+      console.log("DATA: " + data);
       return data;
     }
     
+    // SHOW DATA
+    // ---------
     function showData(data){
       var template = $('#template-output').html()
       console.log(JSON.stringify(data,null,2))
       $('#out').html(Mustache.render(template, data))
     }
-
+    
+    // AUTORUN
+    // -------
     function autorun(){
       if(null == data){
         return alert('Please insert JSON data from Trello in the code')        
@@ -150,8 +162,8 @@
     
     if (document.addEventListener){
       document.addEventListener("DOMContentLoaded", autorun, false);
-    }else if{
-      (document.attachEvent) document.attachEvent("onreadystatechange", autorun);
+    }else if (document.attachEvent){
+      document.attachEvent("onreadystatechange", autorun);
     }else{
       window.onload = autorun;
     }
