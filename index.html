@@ -46,9 +46,10 @@
   
 
   <!--
-  Most of the scripting (almost every line of it) belongs to:
+  Most of the scripting belongs to:
     Mathias Rangel Wulff - True Trello Printer Gist
     https://gist.github.com/mathiasrw/8710615
+  That was my starting point, then I added/change som functionallity
   -->
   <!-- 
     Template Script - Dinamically adding a List and Cards 
@@ -61,13 +62,13 @@
             <div class="panel panel-default">
                   <div class="panel-heading"><h4>{{name}}</h4>{{{desc}}}</div>
                   <!--div class="panel-body" >
-
+                  
                   </div-->
                  <ul class="list-group">
-
-                {{#actions}}
+                  
+                {{#members}}
                      <li class="list-group-item"><tt style="color:gray;">{{date}} </tt> {{{text}}}</li>
-                {{/actions}}
+                {{/members}}
               </ul>
             </div>
         {{/cards}}
@@ -134,7 +135,7 @@
         }
         
         console.log("------------------------------");
-        console.log(""+JSON.stringify(card,null,2));
+        //console.log(""+JSON.stringify(card,null,2));
         console.log("------------------------------");
         
         // Get member name from id
@@ -142,7 +143,7 @@
         for (i in members){
           for (j in card.idMembers)
           if (members[i].id == card.idMembers[j]){
-            memberList.push(members[i].name);
+            memberList.push({text: members[i].name});
           }
         }
         
@@ -176,7 +177,6 @@
         }
       }
       
-      console.log("DATA: " + data);
       return data;
     }
     
