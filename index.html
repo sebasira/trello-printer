@@ -95,6 +95,9 @@
         ref: {}
       }
       
+      // List of members: id + fullName
+      var members = [];
+      
       // Swipe LIST inside JSON
       for(i in trelloJson.lists){
         var list = trelloJson.lists[i]
@@ -109,19 +112,53 @@
         data.lists.push(data.ref[list.id])
       }
       
+      
+      // Swipe MEMBERS inside JSON
+      for(i in trelloJson.members){
+        var member = trelloJson.members[i]
+        console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+        members.push({ 
+            "id": member.id,
+            "name": member.fullName
+        });
+        console.log(JSON.stringify(members,null,2));
+        console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+      }
+      
+      
       // Swipe CARDS inside JSON
       for(i in trelloJson.cards){
         var card = trelloJson.cards[i]
         if(card.closed){
           //continue
         }
+        
+        console.log("------------------------------");
+        console.log(""+JSON.stringify(card,null,2));
+        console.log("------------------------------");
+        
+        // Get member name from id
+        var memberList = [];
+        for (i in members){
+          for (j in card.idMembers)
+          if (members[i].id == card.idMembers[j]){
+            memberList.push(members[i].name);
+          }
+        }
+        
+        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        console.log(""+JSON.stringify(memberList,null,2));
+        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        
         data.ref[card.id] = {
           name: card.name,
           desc: marked(card.desc),
-          actions: []
+          actions: [],
+          members: memberList
         }
         data.ref[card.idList].cards.push(data.ref[card.id])    
       }
+      
       
       // Swipe ACTIONS inside JSON
       for(i in trelloJson.actions){
