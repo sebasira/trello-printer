@@ -9,7 +9,15 @@
   <link rel="shortcut icon" href="">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-  <style>body{padding-top:50px;}.starter-template{padding:40px 15px;text-align:center;}</style>
+  <style>
+    body{
+      padding-top:50px;
+    }
+    .starter-template{
+      padding:40px 15px;
+      text-align:center;
+    }
+  </style>
 
   <!--[if IE]>
     <script src="https://cdn.jsdelivr.net/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -29,131 +37,133 @@
   <div class="container">
     <div class="starter-template">
       <h1>Hello, world!</h1>
-        <p class="lead">Now you can start your own project with <a target="_blank" href="http://getbootstrap.com/">Bootstrap 3.3.5</a>. This plugin is a fork from <a href="https://github.com/le717/brackets-html-skeleton#readme">HTML Skeleton</a>.</p>
+    </div>
+    <div id="out">
+      <p class="lead">No Trello JSON data found</p>
     </div>
   </div>
 
-  <div id="out">
-      No Trello JSON data found
-    </div>
- 
-  </ul>
-</div>
+  
 
-  <!-- Mathias Rangel Wulff - True Trello Printer Gist-->
+  <!--
+  Most of the scripting (almost every line of it) belongs to:
+    Mathias Rangel Wulff - True Trello Printer Gist
+    https://gist.github.com/mathiasrw/8710615
+  -->
+  <!-- 
+    Template Script - Dinamically adding a List and Cards 
+    Reference: http://www.joezimjs.com/javascript/javascript-templating-adding-html-the-right-way/
+  -->
   <script type="text/html" id="template-output" >
-{{#lists}}
-    <h1>Område: {{name}}</h1>
-    {{#cards}}
-        <div class="panel panel-default">
-              <div class="panel-heading"><h4>{{name}}</h4>{{{desc}}}</div>
-              <!--div class="panel-body" >
-                
-              </div-->
-             <ul class="list-group">
-   
-            {{#actions}}
-                 <li class="list-group-item"><tt style="color:gray;">{{date}} </tt> {{{text}}}</li>
-            {{/actions}}
-          </ul>
-        </div>
-    {{/cards}}
-<hr><br><br>
-{{/lists}}
- 
-</script>
- 
+    {{#lists}}
+        <h1>Lista: {{name}}</h1>
+        {{#cards}}
+            <div class="panel panel-default">
+                  <div class="panel-heading"><h4>{{name}}</h4>{{{desc}}}</div>
+                  <!--div class="panel-body" >
+
+                  </div-->
+                 <ul class="list-group">
+
+                {{#actions}}
+                     <li class="list-group-item"><tt style="color:gray;">{{date}} </tt> {{{text}}}</li>
+                {{/actions}}
+              </ul>
+            </div>
+        {{/cards}}
+    <hr><br><br>
+    {{/lists}}
+  </script>
  
  
  
-  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+ 
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js" type="text/javascript"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js" type="text/javascript"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js" type="text/javascript"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/marked/0.3.0/marked.min.js
 " type="text/javascript"></script>
+  
   <script type="text/javascript">
-   
-  function eatData(trelloJson){
-    var data = {
-                    board: trelloJson.name
-                    ,
-                    lists: []
-                    ,
-                    ref: {}
-                }
- 
-    for(i in trelloJson.lists){
+    function eatData(trelloJson){
+      var data = {
+        board: trelloJson.name,
+        lists: [],
+        ref: {}
+      }
+      
+      for(i in trelloJson.lists){
         var list = trelloJson.lists[i]
         if(list.closed){
             //continue
         }
+          
         data.ref[list.id] = {
-                                name: list.name
-                                ,
-                                cards: []
-                            }
-        data.lists.push(data.ref[list.id])
-    }
- 
- 
-    for(i in trelloJson.cards){
-        var card = trelloJson.cards[i]
-         if(card.closed){
-            //continue
+          name: list.name,
+          cards: []
         }
-        
+        data.lists.push(data.ref[list.id])
+      }
+      
+      for(i in trelloJson.cards){
+        var card = trelloJson.cards[i]
+        if(card.closed){
+          //continue
+        }
         data.ref[card.id] = {
-                                name: card.name
-                                ,
-                                desc: marked(card.desc)
-                                ,
-                                actions: []
-                            }
-        
-    data.ref[card.idList].cards.push(data.ref[card.id])    
- 
+          name: card.name,
+          desc: marked(card.desc),
+          actions: []
+        }
+        data.ref[card.idList].cards.push(data.ref[card.id])    
+      }
+      
+      for(i in trelloJson.actions){
+        var action = trelloJson.actions[i]
+        if(action.   type != "commentCard"){
+          //continue
+        }
+        data.ref[action.id] = {
+          text: marked(action.data.text),
+          date: moment(action.date).format('YYYY-MM-DD')
+        }
+        try{
+          data.ref[action.data.card.id].actions.push(data.ref[action.id])
+        }catch(e){
+        }
+      }
+      return data;
     }
     
-    for(i in trelloJson.actions){
-        var action = trelloJson.actions[i]
-       if(action.   type != "commentCard"){
-            continue
-        }
-        
-       
-         data.ref[action.id] = {
-                                text: marked(action.data.text)
-                                ,
-                                date: moment(action.date).format('YYYY-MM-DD')
-                            }
-        try{
-            data.ref[action.data.card.id].actions.push(data.ref[action.id])
-        } catch(e){}
+    function showData(data){
+      var template = $('#template-output').html()
+      console.log(JSON.stringify(data,null,2))
+      $('#out').html(Mustache.render(template, data))
     }
- 
-    return data;
-  }
- 
-function showData(data){
-    var template = $('#template-output').html()
-    console.log(JSON.stringify(data,null,2))
-    $('#out').html(Mustache.render(template, data))
-}
- 
-   function autorun()
-   {
-        if(null == data){
-          return alert('Please insert JSON data from Trello in the code')        
-        }
-        showData(eatData(data));
-   }
-   if (document.addEventListener) document.addEventListener("DOMContentLoaded", autorun, false);
-   else if (document.attachEvent) document.attachEvent("onreadystatechange", autorun);
-   else window.onload = autorun;
- 
+
+    function autorun(){
+      if(null == data){
+        return alert('Please insert JSON data from Trello in the code')        
+      }
+      showData(eatData(data));
+    }
+    
+    if (document.addEventListener){
+      document.addEventListener("DOMContentLoaded", autorun, false);
+    }else if{
+      (document.attachEvent) document.attachEvent("onreadystatechange", autorun);
+    }else{
+      window.onload = autorun;
+    }
   </script>
 
+  <!-- External JSON file that contains JSON data in this form:
+    data={
+      "id": "52f457c0fc9b3",
+      "name": "My board",
+      .........
+    }
+  -->
   <script src="trello-data.json"></script>
 
   
